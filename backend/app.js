@@ -28,6 +28,12 @@ app.use("/api/v1", user);
 app.use("/api/v1", order);
 app.use("/api/v1", payment);
 
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "UP"
+  });
+});
+
 app.use(express.static(path.join(__dirname, '../frontend/build')));
 
 app.get("*", function(req, res){

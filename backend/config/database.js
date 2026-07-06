@@ -8,7 +8,7 @@ const connectDatabase = () => {
       useCreateIndex: true,
     })
     .then((data) => {
-      //console.log(`Mongodb connected with server: ${data.connection.host}`);
+      console.log(`Mongodb connected with server: ${data.connection.host}`);
     });
 };
 
