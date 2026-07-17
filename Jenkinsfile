@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_REPO = 'romyrichu/ecommerce-backend'
+        IMAGE_TAG = "${BUILD_NUMBER}"
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -22,22 +27,43 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t ecommerce-backend:${BUILD_NUMBER} .'
+                sh 'docker build -t ${IMAGE_REPO}:${IMAGE_TAG} .'
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKER_USERNAME',
+                        passwordVariable: 'DOCKER_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKER_TOKEN" | docker login \
+                          -u "$DOCKER_USERNAME" \
+                          --password-stdin
+
+                        docker push "${IMAGE_REPO}:${IMAGE_TAG}"
+                    '''
+                }
             }
         }
     }
 
     post {
         always {
-            echo "Pipeline finished."
+            sh 'docker logout || true'
+            echo 'Pipeline finished.'
         }
 
         success {
-            echo "Build succeeded: ecommerce-backend:${BUILD_NUMBER}"
+            echo "Published image: ${IMAGE_REPO}:${IMAGE_TAG}"
         }
 
         failure {
-            echo "Pipeline failed. Inspect the failed stage."
+            echo 'Pipeline failed. Inspect the failed stage.'
         }
     }
 }
