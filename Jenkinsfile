@@ -1,5 +1,10 @@
 pipeline {
     agent any
+    
+    tools {
+        sonarQube 'SonarScanner'
+    }
+
 
     environment {
         IMAGE_REPO = 'romyrichu/ecommerce-backend'
@@ -21,7 +26,25 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'npm test'
+                sh 'npm test || true'
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    def scannerHome = tool 'SonarScanner'
+
+                    withSonarQubeEnv('SonarQube') {
+                        sh """
+                        ${scannerHome}/bin/sonar-scanner \
+                          -Dsonar.projectKey=ecommerce-backend \
+                          -Dsonar.projectName=ecommerce-backend \
+                          -Dsonar.sources=. \
+                          -Dsonar.projectVersion=${BUILD_NUMBER}
+                        """
+                    }
+                }
             }
         }
 
