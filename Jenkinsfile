@@ -1,11 +1,6 @@
 pipeline {
     agent any
     
-    tools {
-        sonarQube 'SonarScanner'
-    }
-
-
     environment {
         IMAGE_REPO = 'romyrichu/ecommerce-backend'
         IMAGE_TAG = "${BUILD_NUMBER}"
