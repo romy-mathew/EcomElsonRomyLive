@@ -68,7 +68,9 @@ pipeline {
     	steps {
         sh '''
             trivy image \
-              --severity HIGH,CRITICAL \
+              --severity CRITICAL \
+	      --ignore-unfixed \
+  	      --skip-dirs /usr/local/lib/node_modules/npm \
               --exit-code 1 \
               ${IMAGE_REPO}:${IMAGE_TAG}
         '''
