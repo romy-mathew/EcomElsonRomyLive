@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata: 
+  name: ecommerce-backend
+
+spec:
+  replicas: 1
+
+  selector: 
+    matchLabels:
+      app: ecommerce-backend
+
+  template: 
+    metadata:
+      labels:
+        app: ecommerce-backend
+
+    spec:
+      containers:
+      - name: backend
+        image: ecommerce-backend:v2
+        imagePullPolicy: Never
+
+        ports:
+        - containerPort: 4000 
+
+        readinessProbe: 
+          httpGet: 
+            path: /health
+            port: 4000
+          initialDelaySeconds: 10
+          periodSeconds: 5
+
+        livenessProbe: 
+          httpGet: 
+            path: /health
+            port: 4000
+          initialDelaySeconds: 20
+          periodSeconds: 10
+        
+        resources: 
+          requests: 
+            cpu: "100m"
+            memory: "128Mi"
+
+          limits: 
+            cpu: "500m"
+            memory: "512Mi"  
