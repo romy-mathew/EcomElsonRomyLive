@@ -47,13 +47,23 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
     .search()
     .filter();
 
-  let products = await apiFeature.query;
+  //let products = await apiFeature.query;
 
-  let filteredProductsCount = products.length;
+  //let filteredProductsCount = products.length;
 
+  //apiFeature.pagination(resultPerPage);
+
+  //products = await apiFeature.query;
+  // Execute a cloned query to count filtered products
+  const filteredProducts = await apiFeature.query.clone();
+  const filteredProductsCount = filteredProducts.length;
+
+  // Apply pagination to the original query
   apiFeature.pagination(resultPerPage);
 
-  products = await apiFeature.query;
+  // Execute the paginated query
+  const products = await apiFeature.query;
+
 
   res.status(200).json({
     success: true,
