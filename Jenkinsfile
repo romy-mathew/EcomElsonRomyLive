@@ -96,6 +96,25 @@ pipeline {
                 }
             }
         }
+
+	stage('Update Helm Image Tag') {
+    	  steps {
+	    sshagent(credentials: ['github-ssh']) {
+              sh '''
+                sed -i "s/^  tag: .*/  tag: \\"${IMAGE_TAG}\\"/" helm/ecommerce/values.yaml
+
+                git config user.name "Jenkins"
+                git config user.email "jenkins@localhost"
+
+                git add helm/ecommerce/values.yaml
+                git commit -m "Deploy image ${IMAGE_TAG}" || true
+
+                git push origin HEAD:main
+              '''
+	    }
+
+    	  }
+	}
     }
 
     post {
