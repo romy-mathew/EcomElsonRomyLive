@@ -39,6 +39,7 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
 });
 
 // Get All Product
+/*
 exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
   const resultPerPage = 16;
   const productsCount = await Product.countDocuments();
@@ -73,6 +74,44 @@ exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
     filteredProductsCount,
   });
 });
+*/
+
+// Get All Product -- optimized
+exports.getAllProducts = catchAsyncErrors(async (req, res, next) => {
+  const resultPerPage = 16;
+
+  const apiFeature = new ApiFeatures(Product.find(), req.query)
+    .search()
+    .filter();
+
+  // Extract the MongoDB filter without executing the query
+  const filter = apiFeature.query.getFilter();
+
+  // Always use page 1 as the default
+  const currentPage = Math.max(Number(req.query.page) || 1, 1);
+
+  const skip = resultPerPage * (currentPage - 1);
+
+  // Execute independent database operations concurrently
+  const [productsCount, filteredProductsCount, products] =
+    await Promise.all([
+      Product.countDocuments(),
+      Product.countDocuments(filter),
+      Product.find(filter)
+        .skip(skip)
+        .limit(resultPerPage)
+        .lean(),
+    ]);
+
+  res.status(200).json({
+    success: true,
+    products,
+    productsCount,
+    resultPerPage,
+    filteredProductsCount,
+  });
+});
+
 
 // Get All Product (Admin)
 exports.getAdminProducts = catchAsyncErrors(async (req, res, next) => {
